@@ -1,0 +1,117 @@
+prontera,147,168,5	script	Ordeal Gold Room	791,{
+	mes .nombre$;
+	mes "Puntos Totales: ^bb8fce"+Puntos_Gold+"^000000";
+	if(!$GoldOn && !Puntos_Gold){
+		mes "De momentos mis servicios no estan disponibles para tí";
+		close;
+	}
+	mes "Hola, ya se que necesitas de mis servicios";
+	mes "Pero por favor aclarame cual de ellos vas a necesitar";
+	next;
+	set .@menu$,"Servicios de cange";
+	if($GoldOn) set .@menu$,.@menu$+":Viajar a la zona Gold^5959FF["+getmapusers("ordeal_1-2")+"]^000000";
+	switch(select(.@menu$))
+	{
+		case 2: warp "ordeal_1-2",0,0; end;
+		case 1:
+			mes "Hola, veo que tienes ^5959FF["+Puntos_Gold+"]^000000 Puntos para cangear";
+			mes "Solo tienes una opcion cambiarlos todos o seguir acumulando, dime que necesitas?";
+			next;
+			 set .@menu$,"Cambiar Todo";
+			if($GoldOn)
+				set .@menu$,.@menu$+":Viajar a la Zona Gold";
+			if(select(.@menu$) == 2){
+				warp "ordeal_1-2",0,0;
+				end;
+			}
+OnCange:
+			mes .nombre$;
+			mes "Recibiste "+getitemname(512)+" - ["+Puntos_Gold+"]";
+			mes "Total de Puntos: ^5959FF["+Puntos_Gold+"]^000000";
+			getitem 512,Puntos_Gold;
+			set Puntos_Gold,0;
+			close2;
+			dispbottom "Puntos Gold Room con los que cuentas: "+Puntos_Gold;
+			end;
+	}
+	
+OnInit:
+	set .nombre$, "[^0000FFCucaracha de Oro^000000]";
+	set $GoldOn,0;
+	end;
+}
+
+
+-	script	Gold_Room	-1,{
+	end;
+OnWhisperGlobal:
+	if ( getgmlevel() >= 60 ){
+		if (@whispervar0$ == "activar")
+			donpcevent "Gold_Room::OnWatingRoom";
+	}
+end;
+
+
+OnClock0030: 
+OnClock0430:
+OnClock1230:
+OnClock2030:
+OnWatingRoom:
+	set $GoldOn,1;
+	startnpctimer;
+	killmonsterall "ordeal_1-2",2;
+	announce "[Gold Room ]: La sala Gold Room ha abierto sus puertas", bc_all;
+	monster "ordeal_1-2",0,0,"Gold Monster",1002,500,"Gold_Room::OnMyMobDead";
+	monster "ordeal_1-2",0,0,"Gold Monster",1003,500,"Gold_Room::OnMyMobDead";
+		set .Gold_left, 1000;
+		end;
+
+
+OnMyMobDead:
+	set .Gold_left, .Gold_left - 1;
+	set Puntos_Gold, Puntos_Gold + 1;
+			if (.mobs_left == 400) {
+			monster "ordeal_1-2",0,0,"Gold Monster",3095,300,"Gold_Room::OnMyMobDead";
+			monster "ordeal_1-2",0,0,"Gold Monster",3079,300,"Gold_Room::OnMyMobDead";
+			set .Gold_left, 1000;
+	}
+	dispbottom "Puntos Totales: "+Puntos_Gold;
+	end;
+
+OnPCDieEvent:
+	if (strcharinfo(3) != "ordeal_1-2")
+		end;
+
+	set Puntos_Gold,0;
+	warp "prontera",0,0;
+	end;
+
+	
+OnTimer60000:
+	mapannounce "ordeal_1-2","Tiempo restante: 4 minutos ",bc_all;
+	end;
+
+OnTimer120000:
+	mapannounce "ordeal_1-2","Tiempo restante: 3 minutos ",bc_all;
+	end;
+
+OnTimer180000:
+	mapannounce "ordeal_1-2","Tiempo restante : 2 minutos ",bc_all;
+	end;
+	
+OnTimer240000:
+	mapannounce "ordeal_1-2","Tiempo restante : 1 minutos ",bc_all;
+	end;
+
+
+OnTimer300000:
+	announce "[Gold Room ]: La zala Gold Room cerro sus puertas", bc_all;
+	stopnpctimer;
+	set .Gold_left, 0;
+	set $GoldOn,0;
+	sleep2 3000;
+	areawarp "ordeal_1-2",0,0,500,500,"prontera",149,166,149,170;
+	killmonsterall "ordeal_1-2",2;
+
+	end;
+}
